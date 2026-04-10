@@ -1,5 +1,21 @@
-output/
+# dependencies
+node_modules/
+.next/
+out/
+
+# env
+.env
+.env.local
+
+# python
 *.pyc
 __pycache__/
-.env
+.venv/
+
+# output
+output/
+cell_map_*.txt
+cache/
+
+# os
 .DS_Store
