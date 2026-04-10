@@ -13,12 +13,8 @@
 
 ### 手順
 
-**Step 1: テンプレートをコピー**
-```bash
-cp /Users/miyu/Desktop/data/KYKシート.xlsx jtn-ai-demo/demo1_kyk/templates/KYKシート.xlsx
-```
-
-**Step 2: 結合セルの完全調査**
+**Step 1: 結合セルの完全調査**
+※テンプレートは `demo1_kyk/templates/KYKシート.xlsx` にコミット済み
 以下のスクリプトを実行して結果を確認する。
 ```python
 import openpyxl

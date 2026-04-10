@@ -16,19 +16,8 @@
 
 ### 手順
 
-**Step 1: ファイルコピー**
-```bash
-# テンプレート
-cp /Users/miyu/Desktop/data/5.施工計画書/1.総則.xlsx demo2_sekou_keikaku/templates/
-cp /Users/miyu/Desktop/data/5.施工計画書/2.工事概要.xlsx demo2_sekou_keikaku/templates/
-cp /Users/miyu/Desktop/data/5.施工計画書/7.品質管理.xlsx demo2_sekou_keikaku/templates/
-cp /Users/miyu/Desktop/data/5.施工計画書/8.安全衛生管理.xlsx demo2_sekou_keikaku/templates/
-
-# 参考データ（赤レンガ倉庫）
-cp -r "/Users/miyu/Desktop/data/5.施工計画書/＜参考＞赤レンガ倉庫/" demo2_sekou_keikaku/reference/
-```
-
-**Step 2: 全章のセル構造調査**
+**Step 1: 全章のセル構造調査**
+※テンプレート・参考データは `demo2_sekou_keikaku/templates/` `demo2_sekou_keikaku/reference/` にコミット済み
 
 以下のスクリプトを4ファイル全てに対して実行。
 ```python

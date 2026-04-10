@@ -15,12 +15,7 @@
 3. cell_map.py 作成
 
 ### 手順
-```bash
-# テンプレート
-cp /Users/miyu/Desktop/data/工事月報/10月工事月報.xlsx demo3_geppo/templates/
-# 参考データ
-cp /Users/miyu/Desktop/data/工事月報/参考（赤レンガ）/ demo3_geppo/reference/ -r
-```
+※テンプレート・参考データは `demo3_geppo/templates/` `demo3_geppo/reference/` にコミット済み
 
 セル構造調査は#1-1のスクリプトを流用。3シート（工事月報、その２、その３）全て調査。
 
