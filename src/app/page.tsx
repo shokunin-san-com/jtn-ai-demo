@@ -1,65 +1,124 @@
-import Image from "next/image";
+import Link from "next/link";
+
+const demos = [
+  {
+    id: "demo1",
+    title: "KYKシート",
+    subtitle: "危険予知活動表の自動生成",
+    description:
+      "作業内容を入力するだけで、リスクアセスメント・安全対策を含むKYKシートをAIが自動生成します。",
+    before: "30分",
+    after: "30秒",
+    href: "/demo1",
+    color: "blue",
+  },
+  {
+    id: "demo2",
+    title: "施工計画書",
+    subtitle: "4章分の施工計画書を自動生成",
+    description:
+      "工事情報を入力すると、過去案件を参考にAIが施工計画書（総則・工事概要・品質管理・安全衛生管理）を生成します。",
+    before: "3日",
+    after: "15分",
+    href: "/demo2",
+    color: "emerald",
+  },
+  {
+    id: "demo3",
+    title: "工事月報",
+    subtitle: "月次報告書の自動生成",
+    description:
+      "当月の作業実績・進捗を入力すると、公共工事の文体に沿った工事月報をAIが作成します。",
+    before: "3時間",
+    after: "15分",
+    href: "/demo3",
+    color: "amber",
+  },
+] as const;
+
+const colorMap = {
+  blue: {
+    card: "border-blue-200 hover:border-blue-400 hover:shadow-blue-100",
+    badge: "bg-blue-100 text-blue-700",
+    arrow: "text-blue-600",
+    before: "text-red-500",
+    after: "text-blue-600",
+  },
+  emerald: {
+    card: "border-emerald-200 hover:border-emerald-400 hover:shadow-emerald-100",
+    badge: "bg-emerald-100 text-emerald-700",
+    arrow: "text-emerald-600",
+    before: "text-red-500",
+    after: "text-emerald-600",
+  },
+  amber: {
+    card: "border-amber-200 hover:border-amber-400 hover:shadow-amber-100",
+    badge: "bg-amber-100 text-amber-700",
+    arrow: "text-amber-600",
+    before: "text-red-500",
+    after: "text-amber-600",
+  },
+};
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
+      {/* Hero */}
+      <div className="text-center mb-14">
+        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">
+          JTN AI Demo
+        </h1>
+        <p className="text-lg text-gray-500 max-w-xl mx-auto">
+          AIで建設現場の書類作成を効率化。
+          <br className="hidden sm:block" />
+          3つのデモで時間短縮効果を体験できます。
+        </p>
+      </div>
+
+      {/* Demo Cards */}
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {demos.map((demo) => {
+          const colors = colorMap[demo.color];
+          return (
+            <Link
+              key={demo.id}
+              href={demo.href}
+              className={`group block rounded-xl border-2 bg-white p-6 transition-all hover:shadow-lg ${colors.card}`}
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+              <span
+                className={`inline-block text-xs font-semibold px-2.5 py-1 rounded-full mb-4 ${colors.badge}`}
+              >
+                {demo.id.toUpperCase()}
+              </span>
+              <h2 className="text-xl font-bold text-gray-900 mb-1">
+                {demo.title}
+              </h2>
+              <p className="text-sm text-gray-500 mb-3">{demo.subtitle}</p>
+              <p className="text-sm text-gray-600 leading-relaxed mb-5">
+                {demo.description}
+              </p>
+              {/* Time comparison */}
+              <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
+                <div className="text-center">
+                  <div className="text-xs text-gray-400 mb-0.5">従来</div>
+                  <div className={`text-lg font-bold ${colors.before} line-through`}>
+                    {demo.before}
+                  </div>
+                </div>
+                <svg className={`w-5 h-5 ${colors.arrow} shrink-0`} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                </svg>
+                <div className="text-center">
+                  <div className="text-xs text-gray-400 mb-0.5">AI</div>
+                  <div className={`text-lg font-bold ${colors.after}`}>
+                    {demo.after}
+                  </div>
+                </div>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
     </div>
   );
 }
