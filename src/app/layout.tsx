@@ -30,6 +30,10 @@ export default function RootLayout({
               <Link href="/demo3" className="px-3 py-1.5 rounded-md text-gray-600 hover:text-blue-700 hover:bg-blue-50 transition-colors">
                 工事月報
               </Link>
+              <span className="w-px h-4 bg-gray-200 mx-1" />
+              <Link href="/template-check" className="px-3 py-1.5 rounded-md text-gray-600 hover:text-purple-700 hover:bg-purple-50 transition-colors">
+                テンプレート調査
+              </Link>
             </nav>
           </div>
         </header>
