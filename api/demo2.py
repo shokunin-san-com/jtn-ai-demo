@@ -6,7 +6,12 @@
 
 from http.server import BaseHTTPRequestHandler
 import json
+import os
 import time
+
+from dotenv import load_dotenv
+
+load_dotenv()
 
 MOCK_CHAPTERS = [
     {
