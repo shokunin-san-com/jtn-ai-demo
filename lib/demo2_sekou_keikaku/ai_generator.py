@@ -3,13 +3,9 @@
 .env から CLAUDE_MODEL を読み込み、Anthropic API で施工計画書を章ごとに生成する。
 """
 
-import os
-
 import anthropic
 
-CLAUDE_MODEL = os.environ.get("CLAUDE_MODEL", "claude-sonnet-4-20250514")
-
-client = anthropic.Anthropic()
+from lib.config import CLAUDE_MODEL
 
 
 def generate_chapter(chapter_key: str, project_info: dict) -> dict:
@@ -22,6 +18,8 @@ def generate_chapter(chapter_key: str, project_info: dict) -> dict:
     Returns:
         dict: chapter, title, content を含む辞書
     """
+    client = anthropic.Anthropic()
+
     prompt = (
         f"以下の工事情報に基づき、施工計画書の{chapter_key}を作成してください。\n"
         f"工事名: {project_info.get('project_name', '')}\n"

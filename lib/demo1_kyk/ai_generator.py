@@ -3,13 +3,9 @@
 .env から CLAUDE_MODEL を読み込み、Anthropic API でKYKシートを生成する。
 """
 
-import os
-
 import anthropic
 
-CLAUDE_MODEL = os.environ.get("CLAUDE_MODEL", "claude-sonnet-4-20250514")
-
-client = anthropic.Anthropic()
+from lib.config import CLAUDE_MODEL
 
 
 def generate_kyk(work_description: str, weather: str = "", date: str = "") -> dict:
@@ -18,6 +14,8 @@ def generate_kyk(work_description: str, weather: str = "", date: str = "") -> di
     Returns:
         dict: 作業内容・リスク・重点対策・安全指示を含む辞書
     """
+    client = anthropic.Anthropic()
+
     prompt = (
         f"以下の作業内容に対するKYK（危険予知活動）シートを作成してください。\n"
         f"作業内容: {work_description}\n"

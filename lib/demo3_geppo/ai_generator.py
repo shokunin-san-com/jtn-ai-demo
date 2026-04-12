@@ -3,13 +3,9 @@
 .env から CLAUDE_MODEL を読み込み、Anthropic API で工事月報を生成する。
 """
 
-import os
-
 import anthropic
 
-CLAUDE_MODEL = os.environ.get("CLAUDE_MODEL", "claude-sonnet-4-20250514")
-
-client = anthropic.Anthropic()
+from lib.config import CLAUDE_MODEL
 
 
 def generate_geppo(target_month: str, work_summary: str, progress: int, worker_count: int) -> dict:
@@ -18,6 +14,8 @@ def generate_geppo(target_month: str, work_summary: str, progress: int, worker_c
     Returns:
         dict: 工事報告・作業概要・出来高を含む辞書
     """
+    client = anthropic.Anthropic()
+
     prompt = (
         f"以下の月次情報に基づき、公共工事の文体で工事月報を作成してください。\n"
         f"対象月: {target_month}\n"

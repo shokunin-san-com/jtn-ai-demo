@@ -6,7 +6,6 @@
 
 from http.server import BaseHTTPRequestHandler
 import json
-import os
 
 from dotenv import load_dotenv
 
