@@ -32,6 +32,9 @@ export default function RootLayout({
                 <Link href="/demo3" className="px-3 py-1.5 rounded-md text-gray-600 hover:text-blue-700 hover:bg-blue-50 transition-colors">
                   工事月報
                 </Link>
+                <Link href="/templates" className="px-3 py-1.5 rounded-md text-gray-600 hover:text-blue-700 hover:bg-blue-50 transition-colors">
+                  テンプレート
+                </Link>
                 <div className="ml-2 pl-2 border-l border-gray-200">
                   <OfflineToggle />
                 </div>
