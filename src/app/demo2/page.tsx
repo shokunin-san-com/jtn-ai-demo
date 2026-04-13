@@ -34,6 +34,14 @@ const CHAPTERS = [
   { key: "ch8", title: "第8章 安全衛生管理" },
 ];
 
+// 環境変数から設定を読み込む (#35)
+const DEFAULT_PROJECT_NAME = process.env.NEXT_PUBLIC_DEMO2_PROJECT_NAME || "各ふ頭電力量計更新工事";
+const DEFAULT_LOCATION = process.env.NEXT_PUBLIC_DEMO2_LOCATION || "横浜市各ふ頭";
+const DEFAULT_CLIENT = process.env.NEXT_PUBLIC_DEMO2_CLIENT || "横浜市港湾局";
+const DEFAULT_SCHEDULE_START = process.env.NEXT_PUBLIC_DEMO2_SCHEDULE_START || "令和7年6月30日";
+const DEFAULT_SCHEDULE_END = process.env.NEXT_PUBLIC_DEMO2_SCHEDULE_END || "令和8年1月30日";
+const DEFAULT_WORK_TYPE = process.env.NEXT_PUBLIC_DEMO2_WORK_TYPE || "電力量計更新（積算電力量計の取替）";
+
 /** エラー種別ごとのユーザー向けガイダンス */
 function getErrorGuidance(errorType: ErrorType, detail?: string): string {
   switch (errorType) {
@@ -74,14 +82,12 @@ function parseErrorType(body: Record<string, unknown>): ErrorType {
 }
 
 export default function Demo2Page() {
-  const [projectName, setProjectName] = useState("各ふ頭電力量計更新工事");
-  const [location, setLocation] = useState("横浜市各ふ頭");
-  const [client, setClient] = useState("横浜市港湾局");
-  const [scheduleStart, setScheduleStart] = useState("令和7年6月30日");
-  const [scheduleEnd, setScheduleEnd] = useState("令和8年1月30日");
-  const [workType, setWorkType] = useState(
-    "電力量計更新（積算電力量計の取替）"
-  );
+  const [projectName, setProjectName] = useState(DEFAULT_PROJECT_NAME);
+  const [location, setLocation] = useState(DEFAULT_LOCATION);
+  const [client, setClient] = useState(DEFAULT_CLIENT);
+  const [scheduleStart, setScheduleStart] = useState(DEFAULT_SCHEDULE_START);
+  const [scheduleEnd, setScheduleEnd] = useState(DEFAULT_SCHEDULE_END);
+  const [workType, setWorkType] = useState(DEFAULT_WORK_TYPE);
 
   const [chapters, setChapters] = useState<ChapterResult[]>([]);
   const [generating, setGenerating] = useState(false);
