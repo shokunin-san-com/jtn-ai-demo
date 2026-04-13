@@ -13,6 +13,10 @@ from urllib.parse import urlparse, parse_qs
 import json
 import os
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 # --- キャッシュファイルパス ------------------------------------------------------
 
 CACHE_DIR = os.path.join(os.path.dirname(__file__), "..", "cache")

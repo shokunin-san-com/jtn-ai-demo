@@ -11,6 +11,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+# --- AI モデル設定 ---
+DEFAULT_CLAUDE_MODEL = "claude-sonnet-4-20250514"
+CLAUDE_MODEL = os.environ.get("CLAUDE_MODEL", DEFAULT_CLAUDE_MODEL)
+
+
 class Demo2Config:
     """Demo2（施工計画書）の設定"""
 
