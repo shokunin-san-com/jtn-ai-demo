@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { triggerDownload } from "@/lib/filename";
 
 interface KykRisk {
   危険: string;
@@ -73,12 +74,7 @@ export default function Demo1Page() {
       });
       if (!res.ok) throw new Error("ダウンロードに失敗しました");
       const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `KYK_${date.replace(/-/g, "")}.xlsx`;
-      a.click();
-      URL.revokeObjectURL(url);
+      triggerDownload(blob, `KYK_${date.replace(/-/g, "")}.xlsx`);
     } catch (e) {
       setError(e instanceof Error ? e.message : "ダウンロードに失敗しました");
     } finally {

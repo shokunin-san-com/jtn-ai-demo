@@ -45,10 +45,44 @@ npm run dev
 ```
 jtn-ai-demo/
 ├── src/app/              # Next.js フロントエンド
+├── src/lib/              # 共通ユーティリティ（ファイル名正規化等）
 ├── api/                  # Vercel Python Serverless Functions
 ├── lib/                  # Python共通モジュール（AI生成・Excel書込）
 ├── templates/            # Excelテンプレート
 ├── doc/                  # Issue・設計ドキュメント
 ├── vercel.json           # Vercelデプロイ設定
 └── requirements.txt      # Python依存パッケージ
+```
+
+## 日本語ファイル名のクロスプラットフォーム対応
+
+本プロジェクトはテンプレート (`templates/KYKシート.xlsx` など) および
+ダウンロードファイル名に日本語を含む。macOS / Windows の間で
+Unicode 正規化形式が異なるため、以下の対応を入れている。
+
+### リポジトリ側（テンプレート配置）
+
+- `.gitattributes` で `*.xlsx` をバイナリ扱い、テキストは LF 固定。
+- **macOS で clone する場合は** 必ず以下を有効にする（デフォルト有効だが明示推奨）:
+  ```bash
+  git config --global core.precomposeunicode true
+  git config --global core.quotepath false
+  ```
+  これを有効にすると macOS (NFD) でも Git 上のパスが NFC として扱われ、
+  Windows / Linux とパス一致する。
+
+### フロントエンド側（ダウンロード時のファイル名）
+
+`src/lib/filename.ts` の `normalizeDownloadFilename` / `triggerDownload` を
+必ず経由すること。以下を自動で行う:
+
+1. NFC 正規化（濁点などが分離しない）
+2. Windows 禁止文字 `\ / : * ? " < > |` を全角へ置換
+3. 制御文字 / 前後空白の除去
+
+```tsx
+import { triggerDownload } from "@/lib/filename";
+
+const blob = await res.blob();
+triggerDownload(blob, `工事月報（${targetMonth}）.xlsx`);
 ```

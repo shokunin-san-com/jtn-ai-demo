@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { triggerDownload } from "@/lib/filename";
 
 interface ChapterResult {
   chapter: string;
@@ -125,13 +126,8 @@ export default function Demo2Page() {
       );
       if (!res.ok) throw new Error("ダウンロードに失敗しました");
       const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
       const ch = CHAPTERS.find((c) => c.key === chapterKey);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${ch?.title || chapterKey}.xlsx`;
-      a.click();
-      URL.revokeObjectURL(url);
+      triggerDownload(blob, `${ch?.title || chapterKey}.xlsx`);
     } catch (e) {
       setError(e instanceof Error ? e.message : "ダウンロードに失敗しました");
     }

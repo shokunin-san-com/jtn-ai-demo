@@ -1,0 +1,26 @@
+# 日本語ファイル名・バイナリの取り扱いを明示。
+# 詳細は README の「日本語ファイル名のクロスプラットフォーム対応」を参照。
+
+# Excel テンプレートはバイナリ（差分・改行変換の対象外）
+*.xlsx binary
+*.xls  binary
+*.xlsm binary
+
+# 一般的なバイナリ
+*.ico  binary
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.pdf  binary
+
+# テキストは LF に統一（Windows でのチェックアウト時も変換しない）
+*.ts     text eol=lf
+*.tsx    text eol=lf
+*.js     text eol=lf
+*.mjs    text eol=lf
+*.json   text eol=lf
+*.py     text eol=lf
+*.md     text eol=lf
+*.css    text eol=lf
+*.yml    text eol=lf
+*.yaml   text eol=lf

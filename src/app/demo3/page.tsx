@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { triggerDownload } from "@/lib/filename";
 
 interface GeppoResult {
   工事報告: string;
@@ -70,12 +71,7 @@ export default function Demo3Page() {
       });
       if (!res.ok) throw new Error("ダウンロードに失敗しました");
       const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `工事月報（${targetMonth}）.xlsx`;
-      a.click();
-      URL.revokeObjectURL(url);
+      triggerDownload(blob, `工事月報（${targetMonth}）.xlsx`);
     } catch (e) {
       setError(e instanceof Error ? e.message : "ダウンロードに失敗しました");
     } finally {
