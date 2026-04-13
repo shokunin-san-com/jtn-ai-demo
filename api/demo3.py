@@ -1,11 +1,21 @@
 """工事月報生成 API エンドポイント
 
 バックエンド (lib/demo3_geppo) が実装されたら差し替え。
+
+オフラインモード (?offline=true):
+  API呼び出しをスキップし、キャッシュ済みレスポンスを即座に返す。
+  将来的には cache/demo3_last_result.json から読み込む。
 """
 
 from http.server import BaseHTTPRequestHandler
+from urllib.parse import urlparse, parse_qs
 import json
+import os
 
+# --- キャッシュファイルパス ------------------------------------------------------
+
+CACHE_DIR = os.path.join(os.path.dirname(__file__), "..", "cache")
+CACHE_FILE = os.path.join(CACHE_DIR, "demo3_last_result.json")
 
 MOCK_RESPONSE = {
     "工事報告": (
@@ -25,8 +35,27 @@ MOCK_RESPONSE = {
 }
 
 
+def _load_cache():
+    """キャッシュファイルが存在すれば読み込み、なければ MOCK_RESPONSE を返す"""
+    try:
+        with open(CACHE_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return MOCK_RESPONSE
+
+
+def _save_cache(data):
+    """成功した生成結果をキャッシュファイルに保存する"""
+    os.makedirs(CACHE_DIR, exist_ok=True)
+    with open(CACHE_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+
 class handler(BaseHTTPRequestHandler):
     def do_POST(self):
+        query = parse_qs(urlparse(self.path).query)
+        is_offline = query.get("offline", [""])[0] == "true"
+
         content_length = int(self.headers.get("Content-Length", 0))
         body = self.rfile.read(content_length)
 
@@ -39,8 +68,16 @@ class handler(BaseHTTPRequestHandler):
             self.wfile.write(json.dumps({"error": "不正なJSON"}).encode())
             return
 
-        # TODO: lib/demo3_geppo が実装されたら差し替え
+        if is_offline:
+            # オフラインモード: キャッシュデータを即座に返す（API呼び出しなし）
+            result = _load_cache()
+        else:
+            # TODO: lib/demo3_geppo が実装されたら差し替え
+            result = MOCK_RESPONSE
+            # 成功時にキャッシュ保存
+            _save_cache(result)
+
         self.send_response(200)
         self.send_header("Content-Type", "application/json")
         self.end_headers()
-        self.wfile.write(json.dumps(MOCK_RESPONSE, ensure_ascii=False).encode())
+        self.wfile.write(json.dumps(result, ensure_ascii=False).encode())

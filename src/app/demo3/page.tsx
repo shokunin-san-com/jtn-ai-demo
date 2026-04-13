@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useOffline } from "../offline-provider";
 
 interface GeppoResult {
   工事報告: string;
@@ -21,8 +22,10 @@ export default function Demo3Page() {
   const [progress, setProgress] = useState("45");
   const [workerCount, setWorkerCount] = useState("3");
 
+  const { offline } = useOffline();
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<GeppoResult | null>(null);
+  const [usedOffline, setUsedOffline] = useState(false);
   const [error, setError] = useState("");
   const [downloading, setDownloading] = useState(false);
 
@@ -30,9 +33,11 @@ export default function Demo3Page() {
     setError("");
     setResult(null);
     setLoading(true);
+    setUsedOffline(offline);
 
     try {
-      const res = await fetch("/api/demo3", {
+      const url = offline ? "/api/demo3?offline=true" : "/api/demo3";
+      const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -58,7 +63,9 @@ export default function Demo3Page() {
   const handleDownload = async () => {
     setDownloading(true);
     try {
-      const res = await fetch("/api/demo3?action=download", {
+      const params = new URLSearchParams({ action: "download" });
+      if (offline) params.set("offline", "true");
+      const res = await fetch(`/api/demo3?${params}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -201,8 +208,10 @@ export default function Demo3Page() {
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
                 />
               </svg>
-              AI生成中...
+              {offline ? "キャッシュ読込中..." : "AI生成中..."}
             </>
+          ) : offline ? (
+            "キャッシュから生成"
           ) : (
             "AI生成"
           )}
@@ -219,6 +228,14 @@ export default function Demo3Page() {
       {/* Result Preview */}
       {result && (
         <div className="space-y-6">
+          {usedOffline && (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700 flex items-center gap-2">
+              <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+              </svg>
+              キャッシュデータを使用しています（オフラインモード）
+            </div>
+          )}
           {/* Progress Bar */}
           <div className="bg-white rounded-xl border border-gray-200 p-6">
             <h2 className="text-sm font-semibold text-gray-700 mb-3">

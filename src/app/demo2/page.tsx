@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useOffline } from "../offline-provider";
 
 interface ChapterResult {
   chapter: string;
@@ -27,13 +28,16 @@ export default function Demo2Page() {
     "電力量計更新（積算電力量計の取替）"
   );
 
+  const { offline } = useOffline();
   const [chapters, setChapters] = useState<ChapterResult[]>([]);
   const [generating, setGenerating] = useState(false);
+  const [usedOffline, setUsedOffline] = useState(false);
   const [error, setError] = useState("");
 
   const handleGenerate = async () => {
     setError("");
     setGenerating(true);
+    setUsedOffline(offline);
 
     const initial: ChapterResult[] = CHAPTERS.map((ch) => ({
       chapter: ch.key,
@@ -43,7 +47,8 @@ export default function Demo2Page() {
     setChapters(initial);
 
     try {
-      const res = await fetch("/api/demo2", {
+      const url = offline ? "/api/demo2?offline=true" : "/api/demo2";
+      const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -108,8 +113,10 @@ export default function Demo2Page() {
 
   const handleDownload = async (chapterKey: string) => {
     try {
+      const params = new URLSearchParams({ action: "download", chapter: chapterKey });
+      if (offline) params.set("offline", "true");
       const res = await fetch(
-        `/api/demo2?action=download&chapter=${chapterKey}`,
+        `/api/demo2?${params}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -341,8 +348,10 @@ export default function Demo2Page() {
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
                 />
               </svg>
-              生成中...
+              {offline ? "キャッシュ読込中..." : "生成中..."}
             </>
+          ) : offline ? (
+            "キャッシュから生成"
           ) : (
             "AI生成"
           )}
@@ -359,6 +368,14 @@ export default function Demo2Page() {
       {/* Chapter Progress & Results */}
       {chapters.length > 0 && (
         <div className="space-y-4">
+          {usedOffline && !generating && (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700 flex items-center gap-2">
+              <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+              </svg>
+              キャッシュデータを使用しています（オフラインモード）
+            </div>
+          )}
           <h2 className="text-sm font-semibold text-gray-700">生成結果</h2>
           {chapters.map((ch) => (
             <div
