@@ -19,3 +19,4 @@ cache/
 
 # os
 .DS_Store
+.vercel
