@@ -31,6 +31,19 @@ MOCK_CHAPTERS = [
     },
 ]
 
+# Issue #27: 印刷レイアウト検証（施工計画書は提出用に印刷される）
+MOCK_VALIDATION = [
+    {"name": "ページ数", "template_value": "各章1ページ", "actual_value": "各章1ページ", "passed": True},
+    {"name": "用紙サイズ", "template_value": "A4 縦", "actual_value": "A4 縦", "passed": True},
+    {"name": "余白（上）", "template_value": "25.4mm", "actual_value": "25.4mm", "passed": True},
+    {"name": "余白（下）", "template_value": "25.4mm", "actual_value": "25.4mm", "passed": True},
+    {"name": "余白（左）", "template_value": "19.1mm", "actual_value": "19.1mm", "passed": True},
+    {"name": "余白（右）", "template_value": "19.1mm", "actual_value": "19.1mm", "passed": True},
+    {"name": "印刷範囲", "template_value": "A1:L50", "actual_value": "A1:L50", "passed": True},
+    {"name": "フォント", "template_value": "MS 明朝", "actual_value": "MS 明朝", "passed": True},
+    {"name": "フォントサイズ", "template_value": "10.5pt", "actual_value": "10.5pt", "passed": True},
+]
+
 
 class handler(BaseHTTPRequestHandler):
     def do_POST(self):
@@ -67,6 +80,14 @@ class handler(BaseHTTPRequestHandler):
             }
             self.wfile.write(f"data: {json.dumps(event, ensure_ascii=False)}\n\n".encode())
             self.wfile.flush()
+
+        # Issue #27: 印刷レイアウト検証イベント
+        validation_event = {
+            "type": "validation",
+            "items": MOCK_VALIDATION,
+        }
+        self.wfile.write(f"data: {json.dumps(validation_event, ensure_ascii=False)}\n\n".encode())
+        self.wfile.flush()
 
         self.wfile.write(b"data: [DONE]\n\n")
         self.wfile.flush()

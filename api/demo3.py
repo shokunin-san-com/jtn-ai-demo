@@ -22,6 +22,18 @@ MOCK_RESPONSE = {
         "当月": 15,
         "累計": 45,
     },
+    # Issue #27: 印刷レイアウト検証（工事月報は発注者への提出用に印刷される）
+    "print_layout_validation": [
+        {"name": "ページ数", "template_value": "1ページ", "actual_value": "1ページ", "passed": True},
+        {"name": "用紙サイズ", "template_value": "A4 縦", "actual_value": "A4 縦", "passed": True},
+        {"name": "余白（上）", "template_value": "20.0mm", "actual_value": "20.0mm", "passed": True},
+        {"name": "余白（下）", "template_value": "20.0mm", "actual_value": "20.0mm", "passed": True},
+        {"name": "余白（左）", "template_value": "25.0mm", "actual_value": "25.0mm", "passed": True},
+        {"name": "余白（右）", "template_value": "15.0mm", "actual_value": "15.0mm", "passed": True},
+        {"name": "印刷範囲", "template_value": "A1:K40", "actual_value": "A1:K40", "passed": True},
+        {"name": "フォント", "template_value": "MS 明朝", "actual_value": "MS 明朝", "passed": True},
+        {"name": "フォントサイズ", "template_value": "11pt", "actual_value": "11pt", "passed": True},
+    ],
 }
 
 

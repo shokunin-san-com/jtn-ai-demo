@@ -41,6 +41,18 @@ MOCK_RESPONSE = {
     ],
     "重点対策": "電力量計交換時の感電防止を最重点とする。作業前に必ず検電器で無電圧確認を実施し、短絡防止養生を徹底すること。",
     "安全指示": "暑熱環境が予想されるため、WBGT値を確認しこまめな水分補給と休憩を確保すること。体調不良時は直ちに申告すること。",
+    # Issue #27: 印刷レイアウト検証（KYKシートは毎朝印刷して使用）
+    "print_layout_validation": [
+        {"name": "ページ数", "template_value": "1ページ", "actual_value": "1ページ", "passed": True},
+        {"name": "用紙サイズ", "template_value": "A3 横", "actual_value": "A3 横", "passed": True},
+        {"name": "余白（上）", "template_value": "19.1mm", "actual_value": "19.1mm", "passed": True},
+        {"name": "余白（下）", "template_value": "19.1mm", "actual_value": "19.1mm", "passed": True},
+        {"name": "余白（左）", "template_value": "17.8mm", "actual_value": "17.8mm", "passed": True},
+        {"name": "余白（右）", "template_value": "17.8mm", "actual_value": "17.8mm", "passed": True},
+        {"name": "印刷範囲", "template_value": "A1:AB45", "actual_value": "A1:AB45", "passed": True},
+        {"name": "フォント", "template_value": "MS ゴシック", "actual_value": "MS ゴシック", "passed": True},
+        {"name": "フォントサイズ", "template_value": "10pt", "actual_value": "10pt", "passed": True},
+    ],
 }
 
 
