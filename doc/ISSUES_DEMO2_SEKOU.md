@@ -96,25 +96,36 @@ demo2_sekou_keikaku/cell_map.py
 `demo2_sekou_keikaku/project_input.py`
 
 ### 内容
-KYKの `master_data.py` と同じ方針。デモ用にハードコードした案件情報。
+KYKの `master_data.py` と同じ方針。デモ用に環境変数から案件情報を読み込む。
+
+機密情報（契約金額等）を .env から読み込むため、ソースコードに機密情報が含まれない。
 
 ```python
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 PROJECT_INFO = {
-    "工事名": "各ふ頭電力量計更新工事",
-    "工事場所": "横浜市各ふ頭",
-    "発注者": "横浜市港湾局",
-    "工期_着手": "令和7年6月30日",
-    "工期_完成": "令和8年1月30日",
-    "工種": "電力量計更新（積算電力量計の取替）",
+    "工事名": os.getenv("DEMO2_PROJECT_NAME", "各ふ頭電力量計更新工事"),
+    "工事場所": os.getenv("DEMO2_LOCATION", "横浜市各ふ頭"),
+    "発注者": os.getenv("DEMO2_CLIENT", "横浜市港湾局"),
+    "工期_着手": os.getenv("DEMO2_SCHEDULE_START", "令和7年6月30日"),
+    "工期_完成": os.getenv("DEMO2_SCHEDULE_END", "令和8年1月30日"),
+    "工種": os.getenv("DEMO2_WORK_TYPE", "電力量計更新（積算電力量計の取替）"),
     "施工会社": "㈱ジェイ・ティー・エヌ",
     "現場代理人": "安野 真",
-    "契約金額": "2,450,000円",
+    "契約金額": f"{os.getenv('DEMO2_CONTRACT_AMOUNT', '2450000')}円",
 }
 ```
+
+注: `.env` ファイルは .gitignore に含まれているため、リポジトリには保存されない。
+ローカル開発時は `.env.example` をコピーして `.env` を作成し、必要な値を設定する。
 
 ### OKの基準
 - [ ] `import project_input` でエラーなく読み込める
 - [ ] 必要な全キーが定義されている
+- [ ] PROJECT_INFO が環境変数から値を読み込んでいる
 
 ---
 
