@@ -5,8 +5,9 @@
 
 import anthropic
 
-from lib.ai_utils import extract_text_from_message
-from lib.config import CLAUDE_MODEL
+from lib.ai_utils import extract_text_from_message, truncate_text
+from lib.config import CLAUDE_MODEL, CLAUDE_TEMPERATURE, MAX_CONTENT_CHARS
+from lib.demo2_sekou_keikaku.reference_extractor import load_chapter_reference
 
 
 SYSTEM_PROMPT = (
@@ -48,6 +49,12 @@ CHAPTER_SPECS = {
 
 def _build_prompt(chapter_key: str, project_info: dict) -> str:
     spec = CHAPTER_SPECS[chapter_key]
+    reference = load_chapter_reference(chapter_key, max_chars=2000)
+    reference_block = (
+        f"\n\n## 過去案件の参考記載\n{reference}\n\n（上記を参考に、本工事に即した内容で再構成してください）\n"
+        if reference
+        else ""
+    )
     return (
         f"以下の工事情報に基づき、施工計画書『{spec['title']}』の本文を作成してください。\n\n"
         f"工事名: {project_info.get('project_name', '')}\n"
@@ -57,6 +64,7 @@ def _build_prompt(chapter_key: str, project_info: dict) -> str:
         f"工種: {project_info.get('work_type', '')}\n\n"
         f"{spec['instruction']}\n"
         "本文のみを出力し、章番号や見出しは付けないでください。"
+        f"{reference_block}"
     )
 
 
@@ -69,10 +77,11 @@ def generate_chapter(chapter_key: str, project_info: dict) -> dict:
     message = client.messages.create(
         model=CLAUDE_MODEL,
         max_tokens=2048,
+        temperature=CLAUDE_TEMPERATURE,
         system=SYSTEM_PROMPT,
         messages=[{"role": "user", "content": _build_prompt(chapter_key, project_info)}],
     )
-    content = extract_text_from_message(message).strip()
+    content = truncate_text(extract_text_from_message(message).strip(), MAX_CONTENT_CHARS)
     if not content:
         raise ValueError("AI 応答が空でした")
 

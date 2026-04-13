@@ -97,7 +97,9 @@ def _save_cache(data):
 
 
 def _generate(payload: dict, is_offline: bool) -> dict:
-    if is_offline:
+    from lib.config import DRY_RUN
+
+    if is_offline or DRY_RUN:
         return _load_cache()
 
     api_key = os.environ.get("ANTHROPIC_API_KEY", "")

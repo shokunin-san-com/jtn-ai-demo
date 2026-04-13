@@ -177,7 +177,9 @@ class handler(BaseHTTPRequestHandler):
         # --- SSE 章生成 ---------------------------------------------------------
         retry_chapters = payload.get("retry_chapters")  # list[str] | None
 
-        if is_offline:
+        from lib.config import DRY_RUN
+
+        if is_offline or DRY_RUN:
             chapters = _load_cache()
         elif retry_chapters:
             # 指定章のみ再生成。他はキャッシュから
