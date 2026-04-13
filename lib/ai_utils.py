@@ -55,6 +55,15 @@ def extract_json(text: str) -> dict:
     raise ValueError("JSON の終端が見つかりません")
 
 
+def truncate_text(text: str, max_chars: int) -> str:
+    """テキストを max_chars で切り詰める。超過時は末尾に '…' を付与。"""
+    if not isinstance(text, str) or max_chars <= 0:
+        return text
+    if len(text) <= max_chars:
+        return text
+    return text[: max_chars - 1] + "…"
+
+
 def extract_text_from_message(message) -> str:
     """Anthropic Message オブジェクトからテキスト部分を結合して返す。"""
     parts = []

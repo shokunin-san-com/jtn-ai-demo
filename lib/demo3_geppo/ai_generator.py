@@ -5,8 +5,8 @@ Anthropic API で月次情報から工事月報を生成する。
 
 import anthropic
 
-from lib.ai_utils import extract_json, extract_text_from_message
-from lib.config import CLAUDE_MODEL
+from lib.ai_utils import extract_json, extract_text_from_message, truncate_text
+from lib.config import CLAUDE_MODEL, CLAUDE_TEMPERATURE, MAX_CONTENT_CHARS
 
 
 SYSTEM_PROMPT = (
@@ -38,6 +38,7 @@ def generate_geppo(target_month: str, work_summary: str, progress: int, worker_c
     message = client.messages.create(
         model=CLAUDE_MODEL,
         max_tokens=2048,
+        temperature=CLAUDE_TEMPERATURE,
         system=SYSTEM_PROMPT,
         messages=[
             {
@@ -48,6 +49,12 @@ def generate_geppo(target_month: str, work_summary: str, progress: int, worker_c
     )
     text = extract_text_from_message(message)
     data = extract_json(text)
+
+    # 文字数制限
+    if isinstance(data.get("工事報告"), str):
+        data["工事報告"] = truncate_text(data["工事報告"], MAX_CONTENT_CHARS)
+    if isinstance(data.get("作業概要"), str):
+        data["作業概要"] = truncate_text(data["作業概要"], MAX_CONTENT_CHARS)
 
     for key in ("工事報告", "作業概要", "出来高"):
         if key not in data:

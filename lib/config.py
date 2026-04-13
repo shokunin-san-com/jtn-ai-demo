@@ -15,6 +15,16 @@ load_dotenv()
 DEFAULT_CLAUDE_MODEL = "claude-sonnet-4-20250514"
 CLAUDE_MODEL = os.environ.get("CLAUDE_MODEL", DEFAULT_CLAUDE_MODEL)
 
+# デモ録画時の出力安定化のため温度は 0 固定。
+# 変更したい場合は CLAUDE_TEMPERATURE=0.5 等を .env に設定。
+CLAUDE_TEMPERATURE = float(os.environ.get("CLAUDE_TEMPERATURE", "0"))
+
+# AI 生成テキストの最大文字数（Excel セル流し込み時の暴走対策）
+MAX_CONTENT_CHARS = int(os.environ.get("MAX_CONTENT_CHARS", "2000"))
+
+# ドライランモード: True の場合、API を呼ばずキャッシュ/モックを返す（ ?offline=true と同等）
+DRY_RUN = os.environ.get("DRY_RUN", "false").lower() in ("true", "1", "yes")
+
 
 class Demo2Config:
     """Demo2（施工計画書）の設定"""
