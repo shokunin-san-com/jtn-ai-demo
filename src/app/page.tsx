@@ -119,6 +119,33 @@ export default function Home() {
           );
         })}
       </div>
+
+      {/* Tools Section */}
+      <div className="mt-14 pt-10 border-t border-gray-200">
+        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">
+          開発ツール
+        </h2>
+        <Link
+          href="/template-inspect"
+          className="group block rounded-xl border-2 border-purple-200 bg-white p-5 transition-all hover:shadow-lg hover:border-purple-400 hover:shadow-purple-100 sm:max-w-md"
+        >
+          <div className="flex items-center gap-3">
+            <span className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-purple-100 text-purple-600 shrink-0">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+              </svg>
+            </span>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">TOOL</span>
+                <span className="text-xs text-gray-400">Issue #26</span>
+              </div>
+              <h3 className="text-sm font-semibold text-gray-900 mt-1">テンプレート破壊リスク調査</h3>
+              <p className="text-xs text-gray-500 mt-0.5">openpyxlでExcelテンプレートのマクロ・条件付き書式・画像の破壊リスクを調査</p>
+            </div>
+          </div>
+        </Link>
+      </div>
     </div>
   );
 }
