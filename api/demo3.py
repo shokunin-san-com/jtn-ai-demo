@@ -13,6 +13,10 @@ import json
 import os
 import pathlib
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 # --- キャッシュファイルパス ------------------------------------------------------
 
 CACHE_DIR = os.path.join(os.path.dirname(__file__), "..", "cache")

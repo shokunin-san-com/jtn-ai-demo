@@ -17,6 +17,10 @@ import os
 import sys
 import time
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 # lib.config をインポートするためにパス追加
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from lib.config import Demo2Config
