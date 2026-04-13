@@ -4,17 +4,28 @@
 バックエンド (lib/demo2_sekou_keikaku) が実装されたら差し替え。
 
 機密情報（契約金額等）は環境変数から読み込む。
+
+オフラインモード (?offline=true):
+  API呼び出しをスキップし、キャッシュ済みレスポンスを即座に返す。
+  SSE の sleep を省略して高速にデータを返す。
 """
 
 from http.server import BaseHTTPRequestHandler
+from urllib.parse import urlparse, parse_qs
 import json
-import time
 import os
 import sys
+import time
 
 # lib.config をインポートするためにパス追加
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from lib.config import Demo2Config
+
+# --- キャッシュファイルパス ------------------------------------------------------
+
+CACHE_DIR = os.path.join(os.path.dirname(__file__), "..", "cache")
+CACHE_FILE = os.path.join(CACHE_DIR, "demo2_last_result.json")
+
 
 def _get_mock_chapters():
     """環境変数から MOCK_CHAPTERS を動的に生成"""
@@ -43,8 +54,27 @@ def _get_mock_chapters():
     ]
 
 
+def _load_cache():
+    """キャッシュファイルが存在すれば読み込み、なければ環境変数ベースの MOCK_CHAPTERS を返す"""
+    try:
+        with open(CACHE_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return _get_mock_chapters()
+
+
+def _save_cache(data):
+    """成功した生成結果をキャッシュファイルに保存する"""
+    os.makedirs(CACHE_DIR, exist_ok=True)
+    with open(CACHE_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+
 class handler(BaseHTTPRequestHandler):
     def do_POST(self):
+        query = parse_qs(urlparse(self.path).query)
+        is_offline = query.get("offline", [""])[0] == "true"
+
         content_length = int(self.headers.get("Content-Length", 0))
         body = self.rfile.read(content_length)
 
@@ -57,20 +87,23 @@ class handler(BaseHTTPRequestHandler):
             self.wfile.write(json.dumps({"error": "不正なJSON"}).encode())
             return
 
+        # オフラインモード時はキャッシュ、通常時は環境変数から動的生成
+        chapters = _load_cache() if is_offline else _get_mock_chapters()
+
         # SSE レスポンス
         self.send_response(200)
         self.send_header("Content-Type", "text/event-stream")
         self.send_header("Cache-Control", "no-cache")
         self.end_headers()
 
-        # 環境変数から動的にチャプターを取得
-        chapters = _get_mock_chapters()
         for ch in chapters:
             # generating イベント
             event = {"chapter": ch["chapter"], "status": "generating"}
             self.wfile.write(f"data: {json.dumps(event, ensure_ascii=False)}\n\n".encode())
             self.wfile.flush()
-            time.sleep(0.5)
+            # オフラインモード時は待機なし
+            if not is_offline:
+                time.sleep(0.5)
 
             # done イベント
             event = {
@@ -83,3 +116,7 @@ class handler(BaseHTTPRequestHandler):
 
         self.wfile.write(b"data: [DONE]\n\n")
         self.wfile.flush()
+
+        # 通常モードの成功時にキャッシュ保存
+        if not is_offline:
+            _save_cache(chapters)
