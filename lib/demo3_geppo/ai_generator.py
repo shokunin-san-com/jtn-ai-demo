@@ -1,36 +1,61 @@
 """工事月報 AI生成モジュール
 
-.env から CLAUDE_MODEL を読み込み、Anthropic API で工事月報を生成する。
+Anthropic API で月次情報から工事月報を生成する。
 """
 
 import anthropic
 
+from lib.ai_utils import extract_json, extract_text_from_message
 from lib.config import CLAUDE_MODEL
 
 
-def generate_geppo(target_month: str, work_summary: str, progress: int, worker_count: int) -> dict:
-    """月次情報から工事月報を生成する。
+SYSTEM_PROMPT = (
+    "あなたは公共工事（電気設備）の工事月報を作成する現場代理人です。"
+    "報告書らしい硬めの文体（「〜した」「〜である」）で、事実ベースに簡潔に記述してください。"
+)
 
-    Returns:
-        dict: 工事報告・作業概要・出来高を含む辞書
-    """
-    client = anthropic.Anthropic()
 
-    prompt = (
-        f"以下の月次情報に基づき、公共工事の文体で工事月報を作成してください。\n"
+def _build_prompt(target_month: str, work_summary: str, progress: int, worker_count: int) -> str:
+    return (
+        f"以下の月次情報に基づき、工事月報を作成してください。\n"
         f"対象月: {target_month}\n"
         f"作業概要: {work_summary}\n"
         f"進捗率: {progress}%\n"
         f"作業員数: {worker_count}名\n\n"
-        f"JSON形式で、工事報告（文字列）、作業概要（文字列）、"
-        f"出来高（当月・累計を含む辞書）を返してください。"
+        "以下の JSON スキーマで出力してください（JSON のみ、説明文なし）:\n"
+        "{\n"
+        '  "工事報告": "200〜400文字の報告本文。当月実施内容・安全状況・翌月予定を含む",\n'
+        '  "作業概要": "60〜120文字の簡潔な概要",\n'
+        '  "出来高": {"当月": <当月出来高%>, "累計": <累計出来高%>}\n'
+        "}\n"
+        "出来高の累計は 0〜100 の整数で、入力された進捗率と整合させること。"
     )
 
+
+def generate_geppo(target_month: str, work_summary: str, progress: int, worker_count: int) -> dict:
+    """月次情報から工事月報を生成する。"""
+    client = anthropic.Anthropic()
     message = client.messages.create(
         model=CLAUDE_MODEL,
         max_tokens=2048,
-        messages=[{"role": "user", "content": prompt}],
+        system=SYSTEM_PROMPT,
+        messages=[
+            {
+                "role": "user",
+                "content": _build_prompt(target_month, work_summary, progress, worker_count),
+            }
+        ],
     )
+    text = extract_text_from_message(message)
+    data = extract_json(text)
 
-    # TODO: レスポンスのパース処理を実装
-    raise NotImplementedError("AI生成のレスポンスパースは未実装です")
+    for key in ("工事報告", "作業概要", "出来高"):
+        if key not in data:
+            raise ValueError(f"必須キー '{key}' が応答に含まれていません")
+    if not isinstance(data["出来高"], dict):
+        raise ValueError("出来高は辞書である必要があります")
+    for sub in ("当月", "累計"):
+        if sub not in data["出来高"]:
+            raise ValueError(f"出来高.{sub} が含まれていません")
+
+    return data

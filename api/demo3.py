@@ -1,10 +1,10 @@
 """工事月報生成 API エンドポイント
 
-バックエンド (lib/demo3_geppo) が実装されたら差し替え。
+- POST /api/demo3         : AI 生成結果を JSON で返す
+- POST /api/demo3?action=download : Excel バイナリを返す
 
 オフラインモード (?offline=true):
-  API呼び出しをスキップし、キャッシュ済みレスポンスを即座に返す。
-  将来的には cache/demo3_last_result.json から読み込む。
+  AI 呼び出しをスキップし、キャッシュ済みレスポンスを即座に返す。
 """
 
 from http.server import BaseHTTPRequestHandler
@@ -12,12 +12,14 @@ from urllib.parse import urlparse, parse_qs
 import json
 import os
 import pathlib
+import sys
+import traceback
 
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# --- キャッシュファイルパス ------------------------------------------------------
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 CACHE_DIR = os.path.join(os.path.dirname(__file__), "..", "cache")
 CACHE_FILE = os.path.join(CACHE_DIR, "demo3_last_result.json")
@@ -33,21 +35,16 @@ MOCK_RESPONSE = {
         "作業前の検電確認を徹底した。来月は瑞穂ふ頭の電力量計取替に着手する予定である。"
     ),
     "作業概要": "大さん橋ふ頭・山下ふ頭の電力量計取替作業（計8台）を実施。全数の絶縁抵抗・接地抵抗測定完了。",
-    "出来高": {
-        "当月": 15,
-        "累計": 45,
-    },
+    "出来高": {"当月": 15, "累計": 45},
 }
 
 BASE_DIR = pathlib.Path(__file__).resolve().parent.parent
 TEMPLATE_DIR = BASE_DIR / "templates" / "demo3"
 REFERENCE_DIR = BASE_DIR / "templates" / "reference" / "geppo"
-
 TEMPLATE_FILE = TEMPLATE_DIR / "工事月報（月）.xlsx"
 
 
 def _error_response(handler_self, status, error_type, message, detail=None):
-    """構造化エラーレスポンスを返す"""
     handler_self.send_response(status)
     handler_self.send_header("Content-Type", "application/json")
     handler_self.end_headers()
@@ -58,7 +55,6 @@ def _error_response(handler_self, status, error_type, message, detail=None):
 
 
 def _validate_payload(payload):
-    """リクエストボディのバリデーション。エラーがあれば (error_type, message, detail) を返す"""
     errors = []
 
     work_summary = payload.get("work_summary", "")
@@ -87,7 +83,6 @@ def _validate_payload(payload):
 
 
 def _load_cache():
-    """キャッシュファイルが存在すれば読み込み、なければ MOCK_RESPONSE を返す"""
     try:
         with open(CACHE_FILE, "r", encoding="utf-8") as f:
             return json.load(f)
@@ -96,70 +91,104 @@ def _load_cache():
 
 
 def _save_cache(data):
-    """成功した生成結果をキャッシュファイルに保存する"""
     os.makedirs(CACHE_DIR, exist_ok=True)
     with open(CACHE_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
+
+
+def _generate(payload: dict, is_offline: bool) -> dict:
+    if is_offline:
+        return _load_cache()
+
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        return _load_cache()
+
+    try:
+        from lib.demo3_geppo.ai_generator import generate_geppo
+
+        result = generate_geppo(
+            target_month=payload.get("target_month", ""),
+            work_summary=payload.get("work_summary", ""),
+            progress=int(payload.get("progress", 0)),
+            worker_count=int(payload.get("worker_count", 0)),
+        )
+        _save_cache(result)
+        return result
+    except Exception:
+        traceback.print_exc()
+        return _load_cache()
 
 
 class handler(BaseHTTPRequestHandler):
     def do_POST(self):
         query = parse_qs(urlparse(self.path).query)
         is_offline = query.get("offline", [""])[0] == "true"
+        action = query.get("action", [""])[0]
 
         content_length = int(self.headers.get("Content-Length", 0))
         body = self.rfile.read(content_length)
 
-        # --- JSON パース ---
         try:
             payload = json.loads(body) if body else {}
         except json.JSONDecodeError:
             _error_response(self, 400, "invalid_json", "不正なJSON形式です")
             return
 
-        # --- 入力バリデーション ---
         validation_err = _validate_payload(payload)
         if validation_err:
             error_type, message, detail = validation_err
             _error_response(self, 400, error_type, message, detail)
             return
 
-        # --- APIキー確認 ---
-        api_key = os.environ.get("ANTHROPIC_API_KEY", "")
-        if not api_key:
-            _error_response(
-                self, 503, "api_key_missing",
-                "APIキーが設定されていません",
-                "サーバー側で ANTHROPIC_API_KEY 環境変数を設定してください。管理者にお問い合わせください。",
-            )
-            return
+        # オフライン以外ではテンプレート／参考データの存在を確認
+        if not is_offline:
+            if not TEMPLATE_FILE.exists():
+                _error_response(
+                    self, 500, "template_missing",
+                    "テンプレートファイルが見つかりません",
+                    f"必要なファイル: {TEMPLATE_FILE.name}",
+                )
+                return
+            if not REFERENCE_DIR.exists() or not any(REFERENCE_DIR.iterdir()):
+                _error_response(
+                    self, 500, "reference_missing",
+                    "参考データが見つかりません",
+                    f"参考データフォルダ ({REFERENCE_DIR.name}/) にファイルが存在しません。",
+                )
+                return
 
-        # --- テンプレートファイル確認 ---
-        if not TEMPLATE_FILE.exists():
-            _error_response(
-                self, 500, "template_missing",
-                "テンプレートファイルが見つかりません",
-                f"必要なファイル: {TEMPLATE_FILE.name}",
-            )
-            return
+        result = _generate(payload, is_offline)
 
-        # --- 参考データ確認 ---
-        if not REFERENCE_DIR.exists() or not any(REFERENCE_DIR.iterdir()):
-            _error_response(
-                self, 500, "reference_missing",
-                "参考データが見つかりません",
-                f"参考データフォルダ ({REFERENCE_DIR.name}/) にファイルが存在しません。",
-            )
-            return
+        if action == "download":
+            try:
+                from lib.demo3_geppo.excel_writer import write_geppo
 
-        if is_offline:
-            # オフラインモード: キャッシュデータを即座に返す（API呼び出しなし）
-            result = _load_cache()
-        else:
-            # TODO: lib/demo3_geppo が実装されたら差し替え
-            result = MOCK_RESPONSE
-            # 成功時にキャッシュ保存
-            _save_cache(result)
+                xlsx = write_geppo(
+                    result,
+                    target_month=payload.get("target_month", ""),
+                    worker_count=int(payload.get("worker_count", 0)),
+                )
+            except Exception as e:
+                traceback.print_exc()
+                _error_response(
+                    self, 500, "excel_write_failed",
+                    "Excel生成に失敗しました",
+                    str(e),
+                )
+                return
+
+            self.send_response(200)
+            self.send_header(
+                "Content-Type",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
+            self.send_header(
+                "Content-Disposition", 'attachment; filename="geppo.xlsx"'
+            )
+            self.end_headers()
+            self.wfile.write(xlsx)
+            return
 
         self.send_response(200)
         self.send_header("Content-Type", "application/json")
