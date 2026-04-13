@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import PrintLayoutValidation, {
+  type PrintLayoutExpected,
+} from "../components/PrintLayoutValidation";
 
 interface ChapterResult {
   chapter: string;
@@ -17,6 +20,16 @@ const CHAPTERS = [
   { key: "ch8", title: "第8章 安全衛生管理" },
 ];
 
+// 元テンプレート（施工計画書）の印刷レイアウト
+const SEKOU_PRINT_LAYOUT: PrintLayoutExpected = {
+  paperSize: "A4",
+  orientation: "縦",
+  margins: "上 2.0cm / 下 1.8cm / 左右 2.0cm",
+  scaling: "ページ幅に合わせて縮小",
+  font: "ＭＳ 明朝 / ＭＳ ゴシック 10.5pt",
+  pageCount: "各章1〜3ページ",
+};
+
 export default function Demo2Page() {
   const [projectName, setProjectName] = useState("各ふ頭電力量計更新工事");
   const [location, setLocation] = useState("横浜市各ふ頭");
@@ -30,9 +43,11 @@ export default function Demo2Page() {
   const [chapters, setChapters] = useState<ChapterResult[]>([]);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState("");
+  const [downloaded, setDownloaded] = useState(false);
 
   const handleGenerate = async () => {
     setError("");
+    setDownloaded(false);
     setGenerating(true);
 
     const initial: ChapterResult[] = CHAPTERS.map((ch) => ({
@@ -132,6 +147,7 @@ export default function Demo2Page() {
       a.download = `${ch?.title || chapterKey}.xlsx`;
       a.click();
       URL.revokeObjectURL(url);
+      setDownloaded(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : "ダウンロードに失敗しました");
     }
@@ -411,6 +427,14 @@ export default function Demo2Page() {
               )}
             </div>
           ))}
+
+          {/* 印刷レイアウト検証 OK基準 (Issue #27) */}
+          <PrintLayoutValidation
+            templateName="施工計画書テンプレート"
+            expected={SEKOU_PRINT_LAYOUT}
+            accent="emerald"
+            enabled={downloaded}
+          />
         </div>
       )}
     </div>

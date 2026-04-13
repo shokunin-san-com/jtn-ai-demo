@@ -1,6 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import PrintLayoutValidation, {
+  type PrintLayoutExpected,
+} from "../components/PrintLayoutValidation";
+
+// 元テンプレート（KYKシート.xlsx）の印刷レイアウト
+const KYK_PRINT_LAYOUT: PrintLayoutExpected = {
+  paperSize: "A4",
+  orientation: "横",
+  margins: "上下 1.9cm / 左右 1.8cm",
+  scaling: "1ページに収まるよう縮小",
+  font: "MS Pゴシック 11pt",
+  pageCount: "1ページ",
+};
 
 interface KykRisk {
   危険: string;
@@ -30,10 +43,12 @@ export default function Demo1Page() {
   const [result, setResult] = useState<KykResult | null>(null);
   const [error, setError] = useState("");
   const [downloading, setDownloading] = useState(false);
+  const [downloaded, setDownloaded] = useState(false);
 
   const handleGenerate = async () => {
     setError("");
     setResult(null);
+    setDownloaded(false);
     setLoading(true);
 
     try {
@@ -79,6 +94,7 @@ export default function Demo1Page() {
       a.download = `KYK_${date.replace(/-/g, "")}.xlsx`;
       a.click();
       URL.revokeObjectURL(url);
+      setDownloaded(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : "ダウンロードに失敗しました");
     } finally {
@@ -353,6 +369,14 @@ export default function Demo1Page() {
               </>
             )}
           </button>
+
+          {/* 印刷レイアウト検証 OK基準 (Issue #27) */}
+          <PrintLayoutValidation
+            templateName="KYKシート.xlsx"
+            expected={KYK_PRINT_LAYOUT}
+            accent="blue"
+            enabled={downloaded}
+          />
         </div>
       )}
     </div>

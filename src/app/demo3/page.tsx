@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import PrintLayoutValidation, {
+  type PrintLayoutExpected,
+} from "../components/PrintLayoutValidation";
 
 interface GeppoResult {
   工事報告: string;
@@ -12,6 +15,16 @@ interface GeppoResult {
 }
 
 const MONTHS = Array.from({ length: 12 }, (_, i) => `${i + 1}月`);
+
+// 元テンプレート（工事月報）の印刷レイアウト
+const GEPPO_PRINT_LAYOUT: PrintLayoutExpected = {
+  paperSize: "A4",
+  orientation: "縦",
+  margins: "上下 1.9cm / 左右 1.8cm",
+  scaling: "1ページに収まるよう縮小",
+  font: "ＭＳ ゴシック 10.5pt",
+  pageCount: "1ページ",
+};
 
 export default function Demo3Page() {
   const [targetMonth, setTargetMonth] = useState("10月");
@@ -25,10 +38,12 @@ export default function Demo3Page() {
   const [result, setResult] = useState<GeppoResult | null>(null);
   const [error, setError] = useState("");
   const [downloading, setDownloading] = useState(false);
+  const [downloaded, setDownloaded] = useState(false);
 
   const handleGenerate = async () => {
     setError("");
     setResult(null);
+    setDownloaded(false);
     setLoading(true);
 
     try {
@@ -76,6 +91,7 @@ export default function Demo3Page() {
       a.download = `工事月報（${targetMonth}）.xlsx`;
       a.click();
       URL.revokeObjectURL(url);
+      setDownloaded(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : "ダウンロードに失敗しました");
     } finally {
@@ -324,6 +340,14 @@ export default function Demo3Page() {
               </>
             )}
           </button>
+
+          {/* 印刷レイアウト検証 OK基準 (Issue #27) */}
+          <PrintLayoutValidation
+            templateName="工事月報テンプレート"
+            expected={GEPPO_PRINT_LAYOUT}
+            accent="amber"
+            enabled={downloaded}
+          />
         </div>
       )}
     </div>
